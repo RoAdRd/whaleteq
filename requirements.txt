@@ -1,0 +1,6 @@
+Flask
+Flask-SocketIO
+bleak
+asyncio
+python-socketio
+eventlet

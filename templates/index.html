@@ -1,0 +1,641 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultrahuman Ring Testing System</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 1400px;
+            width: 100%;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        @media (max-width: 1200px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            color: #333;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            padding: 25px;
+            border: 2px solid #f0f0f0;
+            border-radius: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .section:hover {
+            border-color: #667eea;
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.1);
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+            display: flex;
+            align-items: center;
+        }
+
+        .section h2::before {
+            content: '';
+            width: 4px;
+            height: 20px;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+
+        .btn-danger:hover {
+            box-shadow: 0 5px 15px rgba(255, 107, 107, 0.3);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-connected {
+            background: #4CAF50;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.5);
+        }
+
+        .status-disconnected {
+            background: #f44336;
+        }
+
+        .status-connecting {
+            background: #ff9800;
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .log-container {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            border: 2px solid #e9ecef;
+        }
+
+        .log-entry {
+            margin-bottom: 8px;
+            padding: 8px 12px;
+            border-radius: 5px;
+            border-left: 4px solid #ddd;
+        }
+
+        .log-info {
+            background: #e3f2fd;
+            border-left-color: #2196f3;
+            color: #1565c0;
+        }
+
+        .log-success {
+            background: #e8f5e8;
+            border-left-color: #4caf50;
+            color: #2e7d32;
+        }
+
+        .log-error {
+            background: #ffebee;
+            border-left-color: #f44336;
+            color: #c62828;
+        }
+
+        .log-warning {
+            background: #fff3e0;
+            border-left-color: #ff9800;
+            color: #ef6c00;
+        }
+
+        .test-results {
+            margin-top: 20px;
+        }
+
+        .test-result-item {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-left: 4px solid #ddd;
+        }
+
+        .test-result-passed {
+            background: #e8f5e8;
+            border-left-color: #4caf50;
+        }
+
+        .test-result-failed {
+            background: #ffebee;
+            border-left-color: #f44336;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .device-status {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔬 Ultrahuman Ring Testing System</h1>
+            <p>Automated BPM testing with Whaleteq device integration</p>
+        </div>
+
+        <div class="main-content">
+            <div class="left-panel">
+                <!-- Device Connection Section -->
+                <div class="section">
+                    <h2>Device Connection</h2>
+                    
+                    <div class="device-status">
+                        <span class="status-indicator status-disconnected" id="whaleteq-status"></span>
+                        <span>Whaleteq Device: <strong id="whaleteq-status-text">Disconnected</strong></span>
+                    </div>
+                    
+                    <button class="btn" id="connect-whaleteq-btn" onclick="connectWhaleteq()">
+                        <span id="whaleteq-connect-spinner" class="spinner hidden"></span>
+                        Connect Whaleteq Device
+                    </button>
+                </div>
+
+                <!-- Ring Connection Section -->
+                <div class="section">
+                    <h2>Ring Connection</h2>
+                    
+                    <div class="device-status">
+                        <span class="status-indicator status-disconnected" id="ring-status"></span>
+                        <span>Ring: <strong id="ring-status-text">Disconnected</strong></span>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="ring-name">Ring Name:</label>
+                        <input type="text" id="ring-name" placeholder="Enter ring name (e.g., UH_C71AAFFD5A88)" value="UH_C71AAFFD5A88">
+                    </div>
+                    
+                    <button class="btn" id="connect-ring-btn" onclick="connectRing()" disabled>
+                        <span id="ring-connect-spinner" class="spinner hidden"></span>
+                        Connect Ring
+                    </button>
+                </div>
+
+                <!-- System Log Section -->
+                <div class="section">
+                    <h2>System Log</h2>
+                    <div class="log-container" id="log-container">
+                        <div class="log-entry log-info">
+                            <strong>[INFO]</strong> System initialized. Ready to connect devices.
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="right-panel">
+                <!-- Test Progress Section -->
+                <div class="section" id="test-progress-section">
+                    <h2>Test Progress</h2>
+                    
+                    <div id="current-test-stage" class="hidden">
+                        <p><strong>Current Stage:</strong> <span id="stage-name">-</span></p>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="progress-fill"></div>
+                        </div>
+                        <p id="countdown-text">-</p>
+                    </div>
+                    
+                    <div class="test-results" id="test-results">
+                        <!-- Test results will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Test Control Section -->
+                <div class="section">
+                    <h2>Test Control</h2>
+                    
+                    <div class="form-group">
+                        <p><strong>Test Sequence:</strong></p>
+                        <ul style="margin-left: 20px; color: #666;">
+                            <li>60 BPM test (±2 BPM tolerance) - 30 seconds</li>
+                            <li>120 BPM test (±5 BPM tolerance) - 30 seconds</li>
+                            <li>180 BPM test (±5 BPM tolerance) - 30 seconds</li>
+                        </ul>
+                    </div>
+                    
+                    <button class="btn" id="start-test-btn" onclick="startTest()" disabled>
+                        Start BPM Test Sequence
+                    </button>
+                    
+                    <button class="btn btn-danger" id="stop-test-btn" onclick="stopTest()" disabled>
+                        Stop Test
+                    </button>
+                    
+                    <button class="btn btn-danger" onclick="disconnectAll()">
+                        Disconnect All
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const socket = io();
+        let testInProgress = false;
+        let currentStageTimer = null;
+
+        // Socket event handlers
+        socket.on('connect', function() {
+            addLog('Connected to server', 'info');
+        });
+
+        socket.on('whaleteq_connected', function(data) {
+            const statusIndicator = document.getElementById('whaleteq-status');
+            const statusText = document.getElementById('whaleteq-status-text');
+            const connectBtn = document.getElementById('connect-whaleteq-btn');
+            const ringConnectBtn = document.getElementById('connect-ring-btn');
+            const spinner = document.getElementById('whaleteq-connect-spinner');
+
+            // Hide spinner and re-enable button
+            spinner.classList.add('hidden');
+            connectBtn.disabled = false;
+
+            if (data.success) {
+                statusIndicator.className = 'status-indicator status-connected';
+                statusText.textContent = 'Connected';
+                connectBtn.innerHTML = '<span id="whaleteq-connect-spinner" class="spinner hidden"></span>Disconnect Whaleteq';
+                connectBtn.onclick = disconnectWhaleteq;
+                ringConnectBtn.disabled = false;
+                addLog(data.message, 'success');
+            } else {
+                statusIndicator.className = 'status-indicator status-disconnected';
+                statusText.textContent = 'Disconnected';
+                connectBtn.innerHTML = '<span id="whaleteq-connect-spinner" class="spinner hidden"></span>Connect Whaleteq Device';
+                connectBtn.onclick = connectWhaleteq;
+                addLog(data.message, 'error');
+            }
+        });
+
+        socket.on('ring_connected', function(data) {
+            const statusIndicator = document.getElementById('ring-status');
+            const statusText = document.getElementById('ring-status-text');
+            const connectBtn = document.getElementById('connect-ring-btn');
+            const startTestBtn = document.getElementById('start-test-btn');
+            const spinner = document.getElementById('ring-connect-spinner');
+
+            spinner.classList.add('hidden');
+            connectBtn.disabled = false;
+
+            if (data.success) {
+                statusIndicator.className = 'status-indicator status-connected';
+                statusText.textContent = 'Connected';
+                connectBtn.innerHTML = '<span id="ring-connect-spinner" class="spinner hidden"></span>Disconnect Ring';
+                connectBtn.onclick = disconnectRing;
+                startTestBtn.disabled = false;
+                addLog(data.message, 'success');
+            } else {
+                statusIndicator.className = 'status-indicator status-disconnected';
+                statusText.textContent = 'Disconnected';
+                connectBtn.innerHTML = '<span id="ring-connect-spinner" class="spinner hidden"></span>Connect Ring';
+                connectBtn.onclick = connectRing;
+                addLog(data.message, 'error');
+            }
+        });
+
+        socket.on('test_progress', function(data) {
+            addLog(data.message, data.type);
+            
+            if (data.stage) {
+                document.getElementById('stage-name').textContent = data.stage;
+                document.getElementById('current-test-stage').classList.remove('hidden');
+            }
+            
+            if (data.countdown) {
+                document.getElementById('countdown-text').textContent = `${data.countdown} seconds remaining`;
+                const progress = ((30 - data.countdown) / 30) * 100;
+                document.getElementById('progress-fill').style.width = `${progress}%`;
+            }
+            
+            if (data.result) {
+                addTestResult(data.result);
+            }
+        });
+
+        socket.on('test_completed', function(data) {
+            addLog(data.message, 'success');
+            document.getElementById('current-test-stage').classList.add('hidden');
+            document.getElementById('start-test-btn').disabled = false;
+            document.getElementById('stop-test-btn').disabled = true;
+            testInProgress = false;
+        });
+
+        socket.on('test_failed', function(data) {
+            addLog(data.message, 'error');
+            document.getElementById('current-test-stage').classList.add('hidden');
+            document.getElementById('start-test-btn').disabled = false;
+            document.getElementById('stop-test-btn').disabled = true;
+            testInProgress = false;
+        });
+
+        socket.on('test_retry', function(data) {
+            addLog(`Retrying ${data.stage} (attempt ${data.retry}/${data.max_retries})`, 'warning');
+        });
+
+        socket.on('test_error', function(data) {
+            addLog(data.message, 'error');
+            testInProgress = false;
+            document.getElementById('start-test-btn').disabled = false;
+            document.getElementById('stop-test-btn').disabled = true;
+        });
+
+        socket.on('status_update', function(data) {
+            addLog(data.message, data.type);
+        });
+
+        socket.on('devices_disconnected', function(data) {
+            addLog(data.message, 'info');
+            resetUI();
+        });
+
+        // UI Functions
+        function connectWhaleteq() {
+            const btn = document.getElementById('connect-whaleteq-btn');
+            const statusIndicator = document.getElementById('whaleteq-status');
+            const spinner = document.getElementById('whaleteq-connect-spinner');
+            
+            statusIndicator.className = 'status-indicator status-connecting';
+            btn.disabled = true;
+            spinner.classList.remove('hidden');
+            
+            socket.emit('connect_whaleteq');
+        }
+
+        function disconnectWhaleteq() {
+            socket.emit('disconnect_all');
+        }
+
+        function connectRing() {
+            const ringName = document.getElementById('ring-name').value.trim();
+            if (!ringName) {
+                addLog('Please enter a ring name', 'error');
+                return;
+            }
+
+            const btn = document.getElementById('connect-ring-btn');
+            const statusIndicator = document.getElementById('ring-status');
+            const spinner = document.getElementById('ring-connect-spinner');
+            
+            statusIndicator.className = 'status-indicator status-connecting';
+            btn.disabled = true;
+            spinner.classList.remove('hidden');
+            
+            socket.emit('connect_ring', { ring_name: ringName });
+        }
+
+        function disconnectRing() {
+            socket.emit('disconnect_all');
+        }
+
+        function startTest() {
+            if (testInProgress) return;
+            
+            testInProgress = true;
+            document.getElementById('start-test-btn').disabled = true;
+            document.getElementById('stop-test-btn').disabled = false;
+            document.getElementById('test-results').innerHTML = '';
+            
+            addLog('Starting BPM test sequence...', 'info');
+            socket.emit('start_test');
+        }
+
+        function stopTest() {
+            testInProgress = false;
+            document.getElementById('start-test-btn').disabled = false;
+            document.getElementById('stop-test-btn').disabled = true;
+            document.getElementById('current-test-stage').classList.add('hidden');
+            addLog('Test stopped by user', 'warning');
+        }
+
+        function disconnectAll() {
+            socket.emit('disconnect_all');
+        }
+
+        function addLog(message, type) {
+            const logContainer = document.getElementById('log-container');
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = document.createElement('div');
+            logEntry.className = `log-entry log-${type}`;
+            logEntry.innerHTML = `<strong>[${timestamp}]</strong> ${message}`;
+            
+            logContainer.appendChild(logEntry);
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function addTestResult(result) {
+            const resultsContainer = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result-item ${result.passed ? 'test-result-passed' : 'test-result-failed'}`;
+            
+            resultDiv.innerHTML = `
+                <h4>${result.passed ? '✅' : '❌'} ${result.target_bpm} BPM Test</h4>
+                <p><strong>Target:</strong> ${result.target_bpm} BPM</p>
+                <p><strong>Measured:</strong> ${result.measured_bpm} BPM</p>
+                <p><strong>Difference:</strong> ${result.difference} BPM (tolerance: ±${result.tolerance})</p>
+                <p><strong>Result:</strong> ${result.passed ? 'PASSED' : 'FAILED'}</p>
+            `;
+            
+            resultsContainer.appendChild(resultDiv);
+        }
+
+        function resetUI() {
+            // Reset Whaleteq status
+            document.getElementById('whaleteq-status').className = 'status-indicator status-disconnected';
+            document.getElementById('whaleteq-status-text').textContent = 'Disconnected';
+            document.getElementById('connect-whaleteq-btn').innerHTML = '<span id="whaleteq-connect-spinner" class="spinner hidden"></span>Connect Whaleteq Device';
+            document.getElementById('connect-whaleteq-btn').onclick = connectWhaleteq;
+            document.getElementById('connect-whaleteq-btn').disabled = false;
+            
+            // Reset Ring status
+            document.getElementById('ring-status').className = 'status-indicator status-disconnected';
+            document.getElementById('ring-status-text').textContent = 'Disconnected';
+            document.getElementById('connect-ring-btn').innerHTML = '<span id="ring-connect-spinner" class="spinner hidden"></span>Connect Ring';
+            document.getElementById('connect-ring-btn').onclick = connectRing;
+            document.getElementById('connect-ring-btn').disabled = true;
+            
+            // Reset test controls
+            document.getElementById('start-test-btn').disabled = true;
+            document.getElementById('stop-test-btn').disabled = true;
+            document.getElementById('current-test-stage').classList.add('hidden');
+            
+            testInProgress = false;
+        }
+    </script>
+</body>
+</html>

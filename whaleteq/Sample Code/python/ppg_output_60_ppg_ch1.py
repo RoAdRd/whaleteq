@@ -19,8 +19,8 @@ time.sleep(5)
 print('output PPG (60BPM, 12.5mV, SyncOn) ...')
 sys.stdout.flush()
 
-ppg_waveform = device.get_default_ppg_ch1_waveform()
-device.output_ppg(PPGChannel.Channel1.value, pointer(
+ppg_waveform = device.get_default_ppg_ch3_waveform()
+device.output_ppg(PPGChannel.Channel3.value, pointer(
     ppg_waveform), OutputSignalCallback(0))
 
 time.sleep(10)

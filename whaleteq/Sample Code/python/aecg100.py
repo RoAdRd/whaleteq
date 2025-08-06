@@ -510,7 +510,7 @@ class AECG100:
 
         return waveform
 
-    def get_default_ppg_ch1_waveform(self):
+    def get_default_ppg_ch3_waveform(self):
         waveform = PPG_WAVEFORM()
         waveform.Frequency = 1
         waveform.WaveformType = PPGWaveformType.PPG.value

@@ -1,0 +1,236 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1,user-scalable=no">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/4.0.0/github-markdown.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex/dist/katex.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/markdown-it-texmath/css/texmath.min.css">
+<link rel="stylesheet" href="http://service.whaleteq.com:5000/css/md.css">
+<title>mdmath page</title>
+</head>
+<body class="markdown-body">
+<h1 dir="auto" id="whaleteq-aecg100-sdk-changelog">WhaleTeq AECG100 SDK Changelog</h1>
+<p dir="auto"><strong>Test Environment:</strong></p>
+<ul dir="auto">
+<li dir="auto">Linux Kernel Version (Ubuntu): 6.8.0.49-generic</li>
+<li dir="auto">Raspberry Pi Version: Raspberry Pi 4 Model B (4GB RAM)</li>
+<li dir="auto">Raspberry Pi Linux Kernel Version: 5.10.103-v7l+ (32-bit), 6.1.21-v8+ (64-bit)</li>
+<li dir="auto">macOS Version: macOS Sonoma 14.4.1</li>
+</ul>
+<p dir="auto"><strong>IMPORTANT:</strong></p>
+<ol dir="auto">
+<li dir="auto">the calling convention is _cdecl</li>
+<li dir="auto">If the PPG module WAP2005/ WAP2006 is connected, the Switch sampling function will be disabled</li>
+<li dir="auto">PPG module WAP2012: to output ppg signals, it's suggested to use WTQ*PPGEx</li>
+<li dir="auto">only supported FW version 1.14.44.19 and later</li>
+<li dir="auto">the ECG play sample rate is limited to 20K in MacOS</li>
+<li dir="auto">(Linux/ Raspberry Pi/ macOS) if the devices can not be connected
+<ol dir="auto">
+<li dir="auto">switch to root user</li>
+<li dir="auto">make sure /var/lock directory is created</li>
+<li dir="auto">remove all the files - /var/lock/whaleteq* and try again</li>
+</ol>
+</li>
+</ol>
+<h2 dir="auto" id="version-1051---2025-05-27">Version 1.0.5.1 - 2025-05-27</h2>
+<ol dir="auto">
+<li dir="auto">CHG: moved PPG AC below DC</li>
+<li dir="auto">NEW: added support new PPG module WAP2112</li>
+<li dir="auto">FIX: prevent potential hang on Linux</li>
+</ol>
+<h2 dir="auto" id="version-1041---2024-12-18">Version 1.0.4.1 - 2024-12-18</h2>
+<ol dir="auto">
+<li dir="auto">CHG: the respiration algorithm can be multi selected</li>
+<li dir="auto">CHG: added support apnea in ECG and PPG respiration algorithm</li>
+<li dir="auto">NEW: added play data synchronization functionality</li>
+</ol>
+<p dir="auto"><strong>IMPORTANT:</strong></p>
+<ol dir="auto">
+<li dir="auto">The <em>enum RespirationMode</em> is redefined; struct ECG_WAVEFORM.RespirationMode and struct PPG_WAVEFORM.RespirationMode hold a combination of ::RespirationMode enum values</li>
+<li dir="auto">The <em>struct PPG_WAVEFORM</em> is updated; added apnea settings</li>
+</ol>
+<h2 dir="auto" id="version-1039---2024-11-20">Version 1.0.3.9 - 2024-11-20</h2>
+<ol dir="auto">
+<li dir="auto">FIX: failed to normally play data in MacOS; adjust the ECG play sample rate to 20K</li>
+</ol>
+<h2 dir="auto" id="version-1037---2024-10-30">Version 1.0.3.7 - 2024-10-30</h2>
+<ol dir="auto">
+<li dir="auto">FIX: DC is incorrectly adjusted (PPG module WAP2012)</li>
+<li dir="auto">FIX: play data may be interrupted in some Linux environments</li>
+</ol>
+<h2 dir="auto" id="version-1034---2024-09-10">Version 1.0.3.4 - 2024-09-10</h2>
+<ol dir="auto">
+<li dir="auto">FIX: failed to play data in MacOS</li>
+</ol>
+<h2 dir="auto" id="version-1033---2024-08-22">Version 1.0.3.3 - 2024-08-22</h2>
+<ol dir="auto">
+<li dir="auto">FIX: incorrect ECG signal if PWTT respiration is enabled</li>
+<li dir="auto">NEW: added PPG noise frequency 0.5/ 1/ 2/ 3/ 5/ 10/ 25 Hz (only supported FW version 1.14.44.19 and later)</li>
+<li dir="auto">NEW: added Mac library</li>
+<li dir="auto">FIX: AC/ DC values are incorrect for PPG module WAP2012 (WTQWaveformPlayerOutputPPG*)</li>
+</ol>
+<h2 dir="auto" id="version-10218---2023-02-08">Version 1.0.2.18 - 2023-02-08</h2>
+<ol dir="auto">
+<li dir="auto">FIX: AC/DC is not adjusted in WTQPlayECGAndPPGEx() (PPG module WAP2012)</li>
+</ol>
+<h2 dir="auto" id="version-10216---2022-12-23">Version 1.0.2.16 - 2022-12-23</h2>
+<ol dir="auto">
+<li dir="auto">CHG: adjust DC levels to make PI more accurate (PPG module WAP2012)</li>
+</ol>
+<h2 dir="auto" id="version-10215---2022-06-06">Version 1.0.2.15 - 2022-06-06</h2>
+<ol dir="auto">
+<li dir="auto">FIX: the measured PTTp becomes incorrect if BPM &gt; 125</li>
+<li dir="auto">FIX: the time constant is incorrect for ECG Exponential waveform</li>
+</ol>
+<h2 dir="auto" id="version-10214---2021-04-25">Version 1.0.2.14 - 2021-04-25</h2>
+<ol dir="auto">
+<li dir="auto">CHG: structure PPG_WAVEFORM is updated:
+<ul dir="auto">
+<li dir="auto">Remove AmbientLight</li>
+</ul>
+</li>
+<li dir="auto">NEW: added WTQSetLEDAmbientLightMode() to configure the ambient light mode for PPG module WAP2012</li>
+<li dir="auto">CHG: remove enum PPGSampling::FullPD</li>
+<li dir="auto">CHG: set the baseline of ECG waveforms (Rectangle Pulse/ Triangle Pulse/ Exponential) to zero voltage</li>
+</ol>
+<h2 dir="auto" id="version-10213---2021-03-08">Version 1.0.2.13 - 2021-03-08</h2>
+<ol dir="auto">
+<li dir="auto">NEW: added support new PPG module WAP2008</li>
+</ol>
+<h2 dir="auto" id="version-10212---2021-03-03">Version 1.0.2.12 - 2021-03-03</h2>
+<ol dir="auto">
+<li dir="auto">NEW: added Linux and Raspberry Pi library</li>
+<li dir="auto">FIX: exception occurred in Raspberry Pi x86 if WTQWaveformPlayerOutputPPG3() is called</li>
+</ol>
+<h2 dir="auto" id="version-10211---2021-12-03">Version 1.0.2.11 - 2021-12-03</h2>
+<ol dir="auto">
+<li dir="auto">CHG: structure PPG_WAVEFORM is updated:
+<ul dir="auto">
+<li dir="auto">Add AmbientLight</li>
+</ul>
+</li>
+<li dir="auto">CHG: structure HW_INFORMATION is updated; add FW build version</li>
+<li dir="auto">CHG: removed structure PPG_LED_PULSE</li>
+<li dir="auto">CHG: structure PPG_LED_PULSE_GROUP_SETTING is redefined</li>
+</ol>
+<h2 dir="auto" id="version-10210---2021-08-16">Version 1.0.2.10 - 2021-08-16</h2>
+<ol dir="auto">
+<li dir="auto">FIX: fail to call WTQWriteLEDPulseGroupSetting() immediately following the device is connected</li>
+</ol>
+<h2 dir="auto" id="version-1028---2021-07-06">Version 1.0.2.8 - 2021-07-06</h2>
+<ol dir="auto">
+<li dir="auto">FIX: in PWTT mode, incorrectly output PPG Ch2 AC</li>
+</ol>
+<h2 dir="auto" id="version-1027---2021-06-24">Version 1.0.2.7 - 2021-06-24</h2>
+<ol dir="auto">
+<li dir="auto">FIX: incorrect ECG exposential waveform; the pulse width is not necessary</li>
+<li dir="auto">CHG: update ECG_WAVEFORM and PPG_WAVEFORM structure</li>
+<li dir="auto">CHG: update enum PPGSampling</li>
+<li dir="auto">NEW: added support new PPG module WAP2007</li>
+</ol>
+<p dir="auto"><strong>IMPORTANT:</strong></p>
+<ol dir="auto">
+<li dir="auto">
+<p dir="auto">structure PPG_WAVEFORM is redefined;</p>
+<ul dir="auto">
+<li dir="auto">rename 'RespirationEnabled' to 'RespirationMode'; the value is enum RespirationMode</li>
+<li dir="auto">update 'RespirationVariation' type from 'double' to 'int'</li>
+</ul>
+</li>
+<li dir="auto">
+<p dir="auto">structure ECG_WAVEFORM is redefined:</p>
+<ul dir="auto">
+<li dir="auto">rename 'RespirationEnabled' to 'RespirationMode'; the value is enum RespirationMode</li>
+</ul>
+</li>
+<li dir="auto">
+<p dir="auto">enum PPGSampling is redefined:</p>
+<ul dir="auto">
+<li dir="auto">add PPGSamplingFullPD</li>
+</ul>
+</li>
+</ol>
+<h2 dir="auto" id="version-1022---2021-02-19">Version 1.0.2.2 - 2021-02-19</h2>
+<ol dir="auto">
+<li dir="auto">FIX: when play raw ECG data, if the respiration is enabled, the ampltude of the output signal is incorrect</li>
+<li dir="auto">CHG: when the device is connected, reset the output lead to RA</li>
+<li dir="auto">CHG: when the device is connected, reset the input impedance to off</li>
+<li dir="auto">CHG: when the device is connected, reset the respiration to off</li>
+<li dir="auto">CHG: when play raw ECG data, if all the DC data are zeros, pacing relay switch is kept disabled</li>
+<li dir="auto">NEW: added support new PPG module WAP2012/ WAP2014</li>
+</ol>
+<h2 dir="auto" id="version-1021---2020-11-04">Version 1.0.2.1 - 2020-11-04</h2>
+<ol dir="auto">
+<li dir="auto">CHG: remove structure PPG_LED_PULSE_SETTING</li>
+<li dir="auto">CHG: remove WTQReadLEDPulseSetting(), WTQWriteLEDPulseSetting(); which are replaced with ReadLEDPulseGroupSetting() and WriteLEDPulseGroupSetting()</li>
+</ol>
+<p dir="auto"><strong>IMPORTANT:</strong></p>
+<ol dir="auto">
+<li dir="auto">structure PPG_LED_PULSE_SETTING is removed; WTQReadLEDPulseSetting() and WTQWriteLEDPulseSetting() are replaced with ReadLEDPulseGroupSetting() and WriteLEDPulseGroupSetting()</li>
+</ol>
+<h2 dir="auto" id="version-1016---2020-07-20">Version 1.0.1.6 - 2020-07-20</h2>
+<ol dir="auto">
+<li dir="auto">remove ECG respiration Basic Level 500 ohm</li>
+<li dir="auto">fix: the zero voltage of ECG variable DC is not precisely configured</li>
+</ol>
+<p dir="auto"><strong>IMPORTANT:</strong></p>
+<ol dir="auto">
+<li dir="auto">structure PPG_WAVEFORM is redefined;
+<ul dir="auto">
+<li dir="auto">update 'RespirationAmplitude' to 'RespirationVariation'</li>
+<li dir="auto">add RespirationInExhaleRatio field</li>
+</ul>
+</li>
+</ol>
+<h2 dir="auto" id="version-1015---2020-04-08">Version 1.0.1.5 - 2020-04-08</h2>
+<ol dir="auto">
+<li dir="auto">fix after the waveform outputting is stopped, there are unexpected short signals are generated</li>
+<li dir="auto">fix the play raw delay issue</li>
+</ol>
+<h2 dir="auto" id="version-1014---2020-03-27">Version 1.0.1.4 - 2020-03-27</h2>
+<ol dir="auto">
+<li dir="auto">support new PPG module (only R LED); if the new R PPG module is connected, the Switch sampling function will be disabled</li>
+<li dir="auto">ECG noise: support 100Hz/ 120Hz</li>
+<li dir="auto">PPG noise: 100Hz/ 120Hz/ White Noise</li>
+<li dir="auto">fix continuous WTQOutputECG calls results in no waveform generated</li>
+<li dir="auto">fix OutputSignalCallback function prototype is incorrect</li>
+</ol>
+<h2 dir="auto" id="version-1013---2020-03-16">Version 1.0.1.3 - 2020-03-16</h2>
+<ol dir="auto">
+<li dir="auto">fix PTTp time is incorrectly output</li>
+<li dir="auto">update sample code</li>
+<li dir="auto">fix PTTp/PTTf is not correctly configured when saving waveforms to Mode A/B/C</li>
+</ol>
+<h2 dir="auto" id="version-1011---2019-12-06">Version 1.0.1.1 - 2019-12-06</h2>
+<ol dir="auto">
+<li dir="auto">add 'PacingRate' data member in struct ECG_WAVEFORM; added support async pacing rate</li>
+<li dir="auto">added support ECG respiration; also support ECGRespirationBaseline::ECGRespirationBaseline500</li>
+<li dir="auto">rename 'RespirationApnea' to 'RespirationApneaDuration' in struct ECG_WAVEFORM</li>
+<li dir="auto">add 'RespirationApneaCycle' in struct ECG_WAVEFORM; added support to config apnea cycle length</li>
+<li dir="auto">add *.lib files to \SDK</li>
+<li dir="auto">fix memory leak</li>
+<li dir="auto">added support to PPG frequency scan; WTQOutputFrequencyScanPPG ()</li>
+<li dir="auto">added support PPG square waveform</li>
+<li dir="auto">add api: bool WTQConnect (unsigned int portNumber, unsigned int millisecondsTimeout)</li>
+<li dir="auto">fix play raw data failed in long-run test</li>
+</ol>
+<p dir="auto"><strong>IMPORTANT:</strong></p>
+<ol dir="auto">
+<li dir="auto">enum PPGWaveformType is redefined; PPGWaveformTypeSquare is inserted</li>
+<li dir="auto">structure PPG_WAVEFORM is redefined;
+<ul dir="auto">
+<li dir="auto">add ACOffset field;</li>
+<li dir="auto">update RespirationRate type from 'double' to 'int'</li>
+<li dir="auto">update 'RespirationSize' to 'RespirationAmplitude'</li>
+</ul>
+</li>
+<li dir="auto">structure ECG_WAVEFORM is redefined</li>
+</ol>
+<h2 dir="auto" id="version-1007---2018-08-07">Version 1.0.0.7 - 2018-08-07</h2>
+<ol dir="auto">
+<li dir="auto">initial</li>
+</ol>
+
+</body>
+</html>

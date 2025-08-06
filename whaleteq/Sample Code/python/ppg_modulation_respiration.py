@@ -1,0 +1,36 @@
+from ctypes import *
+from aecg100 import *
+import sys
+import time
+
+
+device = AECG100(get_lib_path())
+
+if device.connect(-1, 5000) == False:
+    print('Error: device is not connected')
+    device.free()
+    sys.exit()
+
+print('device is connected... ({} / {})'.format(
+    device.get_serial_number(),
+    device.get_ppg_serial_number()))
+sys.stdout.flush()
+
+time.sleep(5)
+
+print('output PPG (baseline respiration) ...')
+sys.stdout.flush()
+
+ppg_waveform = device.get_default_ppg_ch1_waveform()
+
+ppg_waveform.RespirationMode = RespirationMode.BaselineModulation.value
+ppg_waveform.RespirationRate = 20  # BPM
+ppg_waveform.RespirationVariation = 10  # variation; 10%
+ppg_waveform.RespirationInExhaleRatio = 2
+
+device.play_ppg(PPGChannel.Channel1.value, pointer(ppg_waveform), OutputSignalCallback(0))
+
+time.sleep(10)
+
+device.stop_output()
+device.free()
